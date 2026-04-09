@@ -49,12 +49,12 @@ GROUPS = [
 ]
 
 DAYS = [
-    {"key": "Пн", "label": "Понедельник"},
-    {"key": "Вт", "label": "Вторник"},
-    {"key": "Ср", "label": "Среда"},
-    {"key": "Чт", "label": "Четверг"},
-    {"key": "Пт", "label": "Пятница"},
-    {"key": "Сб", "label": "Суббота"},
+    {"key": "Mon", "label": "Monday"},
+    {"key": "Tue", "label": "Tuesday"},
+    {"key": "Wed", "label": "Wednesday"},
+    {"key": "Thu", "label": "Thursday"},
+    {"key": "Fri", "label": "Friday"},
+    {"key": "Sat", "label": "Saturday"},
 ]
 
 # ---------------------------------------------------------------------------
@@ -134,7 +134,7 @@ async def show_schedule(
         now_msk = datetime.now(msk)
         current_minutes = now_msk.hour * 60 + now_msk.minute
         day_map = {
-            0: "Пн", 1: "Вт", 2: "Ср", 3: "Чт", 4: "Пт", 5: "Сб", 6: "Вс"
+            0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"
         }
         today_ru = day_map.get(now_msk.weekday(), "")
         all_today = get_schedule(conn, today_ru, group)
@@ -172,7 +172,7 @@ async def show_schedule(
                 for lesson in lessons:
                     lesson["_is_header"] = False
                     schedule.append(lesson)
-        selected_day_label = "Вся неделя"
+        selected_day_label = "Full Week"
     else:
         lessons = get_schedule(conn, day, group)
         schedule = lessons

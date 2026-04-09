@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Расписание</title>
+    <title>Schedule</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -207,8 +207,8 @@
 <body>
 
 <div class="header">
-    <h1>📅 Расписание</h1>
-    <p>Выберите группу и день недели</p>
+    <h1>📅 Schedule</h1>
+    <p>Select your group and day of the week</p>
 </div>
 
 <div class="container">
@@ -217,11 +217,11 @@
     {% if sync_status %}
     <div class="sync-status {{ 'success' if sync_status.status == 'synced' else 'error' }}">
         {% if sync_status.status == 'synced' %}
-            ✅ Синхронизировано: удалено {{ sync_status.deleted }}, добавлено {{ sync_status.inserted }} записей
+            ✅ Synced: deleted {{ sync_status.deleted }}, added {{ sync_status.inserted }} records
         {% elif sync_status.status == 'no_data' %}
             ⚠️ {{ sync_status.message }}
         {% else %}
-            ❌ Ошибка: {{ sync_status.message }}
+            ❌ Error: {{ sync_status.message }}
         {% endif %}
     </div>
     {% endif %}
@@ -230,7 +230,7 @@
     {% if mode == 'now' %}
         {% if now_lesson %}
         <div class="now-banner">
-            <h3>🔴 Сейчас идёт</h3>
+            <h3>🔴 Currently in progress</h3>
             <div class="now-subject">{{ now_lesson.subject }}</div>
             <div class="now-details">
                 ⏰ {{ now_lesson.time_start }} — {{ now_lesson.time_end }}
@@ -240,7 +240,7 @@
         </div>
         {% else %}
         <div class="now-banner">
-            <h3>✅ Сейчас занятий нет</h3>
+            <h3>✅ No classes right now</h3>
         </div>
         {% endif %}
     {% endif %}
@@ -250,7 +250,7 @@
         <form method="post" action="/schedule" id="schedule-form">
             <div class="form-row">
                 <div class="form-group">
-                    <label for="group">Группа</label>
+                    <label for="group">Group</label>
                     <select name="group" id="group">
                         {% for g in groups %}
                         <option value="{{ g.key }}" {% if selected_group == g.key %}selected{% endif %}>{{ g.label }}</option>
@@ -258,9 +258,9 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="day">День</label>
+                    <label for="day">Day</label>
                     <select name="day" id="day">
-                        <option value="">— Выберите день —</option>
+                        <option value="">— Select a day —</option>
                         {% for d in days %}
                         <option value="{{ d.key }}" {% if selected_day == d.key %}selected{% endif %}>{{ d.label }}</option>
                         {% endfor %}
@@ -269,7 +269,7 @@
                 <input type="hidden" name="mode" id="mode" value="{{ mode }}">
                 <div class="form-group" style="flex: 0; min-width: auto;">
                     <label>&nbsp;</label>
-                    <button type="submit" class="btn" id="submit-btn">Показать</button>
+                    <button type="submit" class="btn" id="submit-btn">Show</button>
                 </div>
             </div>
         </form>
@@ -280,16 +280,16 @@
         <form method="post" action="/schedule" style="display:inline;">
             <input type="hidden" name="group" value="{{ selected_group or 'b25-cse-05' }}">
             <input type="hidden" name="mode" value="now">
-            <button type="submit" class="btn btn-sm btn-now">🔴 Что сейчас?</button>
+            <button type="submit" class="btn btn-sm btn-now">🔴 What's now?</button>
         </form>
         <form method="post" action="/schedule" style="display:inline;">
             <input type="hidden" name="group" value="{{ selected_group or 'b25-cse-05' }}">
             <input type="hidden" name="mode" value="week">
-            <button type="submit" class="btn btn-sm">📅 Вся неделя</button>
+            <button type="submit" class="btn btn-sm">📅 Full week</button>
         </form>
         <form method="post" action="/sync" style="display:inline;">
             <input type="hidden" name="group" value="{{ selected_group or 'b25-cse-05' }}">
-            <button type="submit" class="btn btn-sm btn-sync">🔄 Синхронизировать</button>
+            <button type="submit" class="btn btn-sm btn-sync">🔄 Sync</button>
         </form>
     </div>
 
@@ -297,23 +297,23 @@
     {% if schedule is not none or mode == 'now' %}
     <div class="card">
         {% if mode == 'now' %}
-            <div class="schedule-title">🔴 Текущее занятие</div>
+            <div class="schedule-title">🔴 Current class</div>
         {% elif mode == 'week' %}
-            <div class="schedule-title">📅 Расписание на неделю — {{ group_label }}</div>
+            <div class="schedule-title">📅 Weekly schedule — {{ group_label }}</div>
         {% elif selected_day %}
             <div class="schedule-title">📅 {{ day_label }} — {{ group_label }}</div>
         {% else %}
-            <div class="schedule-title">📅 Выберите день</div>
+            <div class="schedule-title">📅 Select a day</div>
         {% endif %}
 
         {% if schedule %}
         <table>
             <thead>
                 <tr>
-                    <th>Время</th>
-                    <th>Предмет</th>
-                    <th>Кабинет</th>
-                    <th>Преподаватель</th>
+                    <th>Time</th>
+                    <th>Subject</th>
+                    <th>Room</th>
+                    <th>Teacher</th>
                 </tr>
             </thead>
             <tbody>
@@ -336,18 +336,18 @@
         {% elif next_lesson %}
         <div class="empty-state">
             <div class="icon">☕</div>
-            <p>Сейчас перерыв. Следующее занятие:</p>
+            <p>Break right now. Next class:</p>
             <div style="margin-top: 12px; font-size: 1.1rem;">
                 <strong>{{ next_lesson.time_start }} — {{ next_lesson.time_end }}</strong><br>
                 {{ next_lesson.subject }}<br>
-                {% if next_lesson.room %}Кабинет: {{ next_lesson.room }}{% endif %}
+                {% if next_lesson.room %}Room: {{ next_lesson.room }}{% endif %}
                 {% if next_lesson.teacher %} | {{ next_lesson.teacher }}{% endif %}
             </div>
         </div>
         {% else %}
         <div class="empty-state">
             <div class="icon">😴</div>
-            <p>Сегодня больше занятий нет</p>
+            <p>No more classes today</p>
         </div>
         {% endif %}
     </div>
@@ -356,12 +356,12 @@
 </div>
 
 <script>
-    // Main form: always submit with mode=day (reset after "Что сейчас?")
+    // Main form: always submit with mode=day (reset after "What's now?")
     document.getElementById('schedule-form').addEventListener('submit', function(e) {
         document.getElementById('mode').value = 'day';
         const btn = document.getElementById('submit-btn');
         btn.disabled = true;
-        btn.textContent = 'Загрузка...';
+        btn.textContent = 'Loading...';
     });
 
     // Action buttons
@@ -370,7 +370,7 @@
             const btn = form.querySelector('button');
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = 'Загрузка...';
+                btn.textContent = 'Loading...';
             }
         });
     });

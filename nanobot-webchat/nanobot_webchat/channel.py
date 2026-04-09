@@ -172,24 +172,24 @@ HTML_PAGE = """<!DOCTYPE html>
     <div class="chat-container">
         <div class="chat-header">
             <h1>📅 Schedule Bot</h1>
-            <div class="status" id="status">Подключение...</div>
+            <div class="status" id="status">Connecting...</div>
         </div>
         <div class="messages" id="messages">
             <div class="welcome-message">
-                <h2>Привет! 👋</h2>
-                <p>Я ваш помощник по расписанию. Спросите меня о занятиях!</p>
+                <h2>Hi! 👋</h2>
+                <p>I'm your schedule assistant. Ask me about classes!</p>
                 <div class="quick-actions">
-                    <button class="quick-action-btn" onclick="sendQuick('Какое у меня расписание на сегодня?')">📅 Сегодня</button>
-                    <button class="quick-action-btn" onclick="sendQuick('Какое у меня расписание на неделю?')">📆 На неделю</button>
-                    <button class="quick-action-btn" onclick="sendQuick('Какое сейчас занятие?')">⏰ Сейчас</button>
-                    <button class="quick-action-btn" onclick="sendQuick('Где проходит Data Structures and Algorithms?')">📍 Кабинет</button>
+                    <button class="quick-action-btn" onclick="sendQuick('What is my schedule for today?')">📅 Today</button>
+                    <button class="quick-action-btn" onclick="sendQuick('What is my schedule for the week?')">📆 This week</button>
+                    <button class="quick-action-btn" onclick="sendQuick('What class is happening now?')">⏰ Now</button>
+                    <button class="quick-action-btn" onclick="sendQuick('Where is Data Structures and Algorithms?')">📍 Room</button>
                 </div>
             </div>
         </div>
         <div class="typing-indicator" id="typing"><span></span><span></span><span></span></div>
         <div class="input-area">
-            <input type="text" id="msgInput" placeholder="Введите сообщение..." disabled>
-            <button id="sendBtn" disabled>Отправить</button>
+            <input type="text" id="msgInput" placeholder="Type a message..." disabled>
+            <button id="sendBtn" disabled>Send</button>
         </div>
     </div>
     <script>
@@ -209,7 +209,7 @@ HTML_PAGE = """<!DOCTYPE html>
         function connect() {
             ws = new WebSocket(getWsUrl());
             ws.onopen = () => {
-                statusDiv.textContent = 'Подключено ✓';
+                statusDiv.textContent = 'Connected ✓';
                 statusDiv.className = 'status connected';
                 msgInput.disabled = false;
                 sendBtn.disabled = false;
@@ -224,7 +224,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 } catch(err) { addMessage(e.data, 'bot'); }
             };
             ws.onclose = () => {
-                statusDiv.textContent = 'Отключено ✗';
+                statusDiv.textContent = 'Disconnected ✗';
                 statusDiv.className = 'status disconnected';
                 msgInput.disabled = true;
                 sendBtn.disabled = true;
@@ -232,10 +232,10 @@ HTML_PAGE = """<!DOCTYPE html>
                 if (reconnectAttempts < maxReconnect) {
                     reconnectAttempts++;
                     const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-                    statusDiv.textContent = `Переподключение через ${delay/1000}с...`;
+                    statusDiv.textContent = `Reconnecting in ${delay/1000}s...`;
                     setTimeout(connect, delay);
                 } else {
-                    statusDiv.textContent = 'Ошибка подключения. Обновите страницу.';
+                    statusDiv.textContent = 'Connection error. Please refresh the page.';
                 }
             };
         }

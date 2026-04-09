@@ -7,8 +7,8 @@ AI-powered schedule assistant with a web UI and natural-language chatbot — ans
 > **Screenshot 1:** Main page — group & day selector with action buttons  
 > *[Insert screenshot of http://host:8080]*
 
-> **Screenshot 2:** Full week schedule  
-> *[Insert screenshot of "Вся неделя" view]*
+> **Screenshot 2:** Full week schedule
+> *[Insert screenshot of "Full week" view]*
 
 > **Screenshot 3:** AI chatbot answering schedule questions  
 > *[Insert screenshot of nanobot webchat]*
@@ -62,16 +62,16 @@ A single interface that:
 
 Open `http://<host>:8080` in any browser:
 1. Select your group from the dropdown
-2. Pick a day or press **"Вся неделя"** for the full week
-3. Press **"Что сейчас?"** to see the current lesson
-4. Press **"Синхронизировать"** to fetch the latest data from Google Sheets
+2. Pick a day or press **"Full week"** for the full week
+3. Press **"What's now?"** to see the current lesson
+4. Press **"Sync"** to fetch the latest data from Google Sheets
 
 ### AI Chatbot
 
 Open the nanobot webchat at `http://<host>:8765` and ask in natural language:
-- "Что сейчас?" / "What do I have now?"
-- "Где математика?" / "Where is math?"
-- "Расписание на пятницу" / "Schedule for Friday"
+- "What's now?" / "What do I have now?"
+- "Where is Math?" / "Where is math?"
+- "Schedule for Friday" / "Schedule for Friday"
 
 ## Deployment
 

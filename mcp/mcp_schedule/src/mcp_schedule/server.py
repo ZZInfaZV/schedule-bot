@@ -40,7 +40,7 @@ def create_server() -> Server:
                     "properties": {
                         "day": {
                             "type": "string",
-                            "description": "Day of the week in Russian: Пн, Вт, Ср, Чт, Пт, Сб. You can also accept 'today', 'tomorrow' and will resolve it.",
+                            "description": "Day of the week: Mon, Tue, Wed, Thu, Fri, Sat. You can also accept 'today', 'tomorrow' and will resolve it.",
                         },
                         "group": {
                             "type": "string",
@@ -48,7 +48,7 @@ def create_server() -> Server:
                         },
                         "week_type": {
                             "type": "string",
-                            "description": "Week type: 'even' (чётная), 'odd' (нечётная), or null for both.",
+                            "description": "Week type: 'even', 'odd', or null for both.",
                             "enum": ["even", "odd"],
                         },
                     },
@@ -57,13 +57,13 @@ def create_server() -> Server:
             ),
             Tool(
                 name="get_room",
-                description="Get the room (classroom) for a specific subject. Use when the user asks 'where is X?', 'what room for Y?', 'кабинет для Z'.",
+                description="Get the room (classroom) for a specific subject. Use when the user asks 'where is X?', 'what room for Y?', 'what room for Z'.",
                 inputSchema={
                     "type": "object",
                     "properties": {
                         "subject": {
                             "type": "string",
-                            "description": "Subject name or part of it (e.g. 'Сети', 'математика').",
+                            "description": "Subject name or part of it (e.g. 'Networks', 'Mathematics').",
                         },
                         "group": {
                             "type": "string",
@@ -75,7 +75,7 @@ def create_server() -> Server:
             ),
             Tool(
                 name="get_teacher",
-                description="Get the teacher for a specific subject. Use when the user asks 'who teaches X?', 'преподаватель для Y'.",
+                description="Get the teacher for a specific subject. Use when the user asks 'who teaches X?', 'teacher for Y'.",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -93,7 +93,7 @@ def create_server() -> Server:
             ),
             Tool(
                 name="get_week",
-                description="Get the full week schedule (Monday through Saturday). Use when the user asks for the entire week schedule or 'расписание на неделю'.",
+                description="Get the full week schedule (Monday through Saturday). Use when the user asks for the entire week schedule or 'weekly schedule'.",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -103,7 +103,7 @@ def create_server() -> Server:
                         },
                         "week_type": {
                             "type": "string",
-                            "description": "Week type: 'even' (чётная), 'odd' (нечётная), or null for both.",
+                            "description": "Week type: 'even', 'odd', or null for both.",
                             "enum": ["even", "odd"],
                         },
                     },
@@ -134,13 +134,13 @@ def create_server() -> Server:
             if lesson:
                 return [TextContent(
                     type="text",
-                    text=f"Сейчас: {lesson['subject']}\n"
-                         f"Кабинет: {lesson['room'] or 'не указан'}\n"
-                         f"Преподаватель: {lesson['teacher'] or 'не указан'}\n"
-                         f"Время: {lesson['time_start']}–{lesson['time_end']}",
+                    text=f"Current: {lesson['subject']}\n"
+                         f"Room: {lesson['room'] or 'not specified'}\n"
+                         f"Teacher: {lesson['teacher'] or 'not specified'}\n"
+                         f"Time: {lesson['time_start']}–{lesson['time_end']}",
                 )]
             else:
-                return [TextContent(type="text", text="Сейчас нет занятий.")]
+                return [TextContent(type="text", text="No classes right now.")]
 
         elif name == "get_schedule":
             day = arguments.get("day", "")
@@ -148,27 +148,27 @@ def create_server() -> Server:
 
             # Resolve relative day names
             day_map = {
-                "сегодня": None,
-                "завтра": None,
+                "today": None,
+                "tomorrow": None,
             }
             today_idx = datetime.now().weekday()
-            ru_days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+            ru_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-            if day.lower() == "сегодня":
+            if day.lower() == "today":
                 day = ru_days[today_idx]
-            elif day.lower() == "завтра":
+            elif day.lower() == "tomorrow":
                 day = ru_days[(today_idx + 1) % 7]
 
             lessons = database.get_schedule(db_conn, day, group, week_type)
             if not lessons:
-                return [TextContent(type="text", text=f"Нет занятий на {day}.")]
+                return [TextContent(type="text", text=f"No classes on {day}.")]
 
-            lines = [f"Расписание на {day}:"]
+            lines = [f"Schedule for {day}:"]
             for l in lessons:
                 week_label = f" ({l['week_type']})" if l["week_type"] != "both" else ""
                 lines.append(
                     f"  {l['time_start']}–{l['time_end']} | {l['subject']}{week_label}"
-                    f" | Каб. {l['room'] or '—'} | {l['teacher'] or '—'}"
+                    f" | Room: {l['room'] or '—'} | {l['teacher'] or '—'}"
                 )
             return [TextContent(type="text", text="\n".join(lines))]
 
@@ -178,10 +178,10 @@ def create_server() -> Server:
             if result:
                 return [TextContent(
                     type="text",
-                    text=f"{result['subject']} → Кабинет: {result['room'] or 'не указан'}",
+                    text=f"{result['subject']} → Room: {result['room'] or 'not specified'}",
                 )]
             else:
-                return [TextContent(type="text", text=f"Не найден кабинет для предмета '{subject}'.")]
+                return [TextContent(type="text", text=f"Room not found for subject '{subject}'.")]
 
         elif name == "get_teacher":
             subject = arguments.get("subject", "")
@@ -189,25 +189,25 @@ def create_server() -> Server:
             if result:
                 return [TextContent(
                     type="text",
-                    text=f"{result['subject']} → Преподаватель: {result['teacher'] or 'не указан'}",
+                    text=f"{result['subject']} → Teacher: {result['teacher'] or 'not specified'}",
                 )]
             else:
-                return [TextContent(type="text", text=f"Не найден преподаватель для предмета '{subject}'.")]
+                return [TextContent(type="text", text=f"Teacher not found for subject '{subject}'.")]
 
         elif name == "get_week":
             week_type = arguments.get("week_type")
             week_data = database.get_week(db_conn, group, week_type)
             if not week_data:
-                return [TextContent(type="text", text="Расписание на неделю пусто. Попробуйте sync_schedule.")]
+                return [TextContent(type="text", text="Weekly schedule is empty. Try sync_schedule.")]
 
-            lines = ["Расписание на неделю:"]
+            lines = ["Weekly schedule:"]
             for day, lessons in week_data.items():
                 lines.append(f"\n{day}:")
                 for l in lessons:
                     week_label = f" ({l['week_type']})" if l["week_type"] != "both" else ""
                     lines.append(
                         f"  {l['time_start']}–{l['time_end']} | {l['subject']}{week_label}"
-                        f" | Каб. {l['room'] or '—'}"
+                        f" | Room: {l['room'] or '—'}"
                     )
             return [TextContent(type="text", text="\n".join(lines))]
 
@@ -216,22 +216,22 @@ def create_server() -> Server:
             if not sheet_url:
                 return [TextContent(
                     type="text",
-                    text="Ошибка: переменная окружения SCHEDULE_SHEET_URL не установлена.",
+                    text="Error: SCHEDULE_SHEET_URL environment variable is not set.",
                 )]
             try:
                 result = sync.sync_from_sheet(sheet_url, db_conn, group=group)
                 return [TextContent(
                     type="text",
-                    text=f"Синхронизация: {result['status']}\n"
-                         f"Удалено: {result.get('deleted', 0)}\n"
-                         f"Добавлено: {result.get('inserted', 0)}\n"
-                         f"Последнее обновление: {result.get('last_sync', '—')}",
+                    text=f"Sync: {result['status']}\n"
+                         f"Deleted: {result.get('deleted', 0)}\n"
+                         f"Added: {result.get('inserted', 0)}\n"
+                         f"Last update: {result.get('last_sync', '—')}",
                 )]
             except Exception as e:
                 return [TextContent(
                     type="text",
-                    text=f"Ошибка синхронизации: {e}\n"
-                         f"Используются локальные данные из базы.",
+                    text=f"Sync error: {e}\n"
+                         f"Using local data from database.",
                 )]
 
         else:

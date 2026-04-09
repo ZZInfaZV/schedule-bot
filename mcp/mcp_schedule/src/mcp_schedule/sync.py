@@ -49,15 +49,15 @@ def _is_room_like(s: str) -> bool:
     return False
 
 
-# Mapping from English day names to Russian abbreviations
+# Mapping from English day names to English abbreviations
 DAY_EN_TO_RU = {
-    "MONDAY": "Пн",
-    "TUESDAY": "Вт",
-    "WEDNESDAY": "Ср",
-    "THURSDAY": "Чт",
-    "FRIDAY": "Пт",
-    "SATURDAY": "Сб",
-    "SUNDAY": "Вс",
+    "MONDAY": "Mon",
+    "TUESDAY": "Tue",
+    "WEDNESDAY": "Wed",
+    "THURSDAY": "Thu",
+    "FRIDAY": "Fri",
+    "SATURDAY": "Sat",
+    "SUNDAY": "Sun",
 }
 
 

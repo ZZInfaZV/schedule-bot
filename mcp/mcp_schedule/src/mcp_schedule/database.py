@@ -66,7 +66,7 @@ def get_now(conn: sqlite3.Connection, group: str = "b25-cse-05") -> Optional[dic
     msk = zoneinfo.ZoneInfo("Europe/Moscow")
     now = datetime.now(msk)
     day_map = {
-        0: "Пн", 1: "Вт", 2: "Ср", 3: "Чт", 4: "Пт", 5: "Сб", 6: "Вс"
+        0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"
     }
     today_ru = day_map.get(now.weekday(), "")
     current_minutes = now.hour * 60 + now.minute
@@ -136,7 +136,7 @@ def get_teacher(conn: sqlite3.Connection, subject: str, group: str = "b25-cse-05
 
 def get_week(conn: sqlite3.Connection, group: str = "b25-cse-05", week_type: Optional[str] = None) -> dict:
     """Get the full week schedule grouped by day."""
-    days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     schedule = {}
 
     for day in days:

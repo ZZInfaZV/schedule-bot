@@ -54,37 +54,41 @@ CSE-05
 
 ---
 
-## Контекст
+## Context
 
 | | |
 |---|---|
-| **Конечные пользователи** | Студенты и преподаватели Sirius University |
-| **Проблема** | Расписание в Google Sheets — неудобно с телефона, нет быстрого поиска, сложно найти кабинет или преподавателя |
-| **Идея** | Расписание в один тап + AI-бот, отвечающий на вопросы естественным языком |
+| **End Users** | Students and faculty of Sirius University |
+| **Problem** | Schedule in Google Sheets — inconvenient on phone, no quick search, hard to find a room or instructor |
+| **Idea** | Schedule in one tap + AI bot that answers questions in natural language |
 
 ---
 
-## Выполнение
+## Implementation
 
-**Как создан:**
-FastAPI web UI + Nanobot AI-агент + MCP-сервер + синхронизация из Google Sheets → кэш в SQLite
+**How it was built:**
+FastAPI web UI + Nanobot AI agent + MCP server + sync from Google Sheets → cache in SQLite
 
-| Версия 1 | Версия 2 |
+| Version 1 | Version 2 |
 |---|---|
-| LLM-бот с запросами на естественном языке | Кнопка «Вся неделя» — фикс бага (итерация DAYS) |
-| Базовый web-чат | Правка URL Google Sheets (опечатка в ID) |
-| MCP-сервер с 6 инструментами | Standalone web UI без LLM |
-| Авто-синк из Sheets | README + MIT License |
+| LLM bot with natural language queries | "Whole week" button — bug fix (DAYS iteration) |
+| Basic web chat | Fixed Google Sheets URL (typo in ID) |
+| MCP server with 6 tools | Standalone web UI without LLM |
+| Auto-sync from Sheets | README + MIT License |
+
+**Feedback addressed:**
+- "Whole week" showed "No classes" → **fixed**
+- "What now?" showed incorrect information → **fixed**
 
 ---
 
-## Демонстрация
+## Demonstration
 
 <div style="display:flex;justify-content:center;align-items:center;min-height:300px;">
 
-### 🎬 Видео-демонстрация Версии 2
+### 🎬 Video Demonstration of Version 2
 
-*[Вставить записанное видео (до 2 мин с голосом)]*
+*[Insert recorded video (up to 2 min with voice)]*
 
 </div>
 
@@ -92,13 +96,13 @@ FastAPI web UI + Nanobot AI-агент + MCP-сервер + синхрониза
 
 <!-- _class: lead -->
 
-## Ссылки
+## Links
 
 <div style="display:flex; justify-content:space-around; margin-top:30px;">
 
 <div style="text-align:center; flex:1;">
 
-**📂 GitHub-репозиторий**
+**📂 GitHub Repository**
 
 `https://github.com/ZZInfaZV/schedule-bot`
 
@@ -108,7 +112,7 @@ FastAPI web UI + Nanobot AI-агент + MCP-сервер + синхрониза
 
 <div style="text-align:center; flex:1;">
 
-**🚀 Развёрнутый продукт**
+**🚀 Deployed Product**
 
 `http://10.93.25.141:8080`
 

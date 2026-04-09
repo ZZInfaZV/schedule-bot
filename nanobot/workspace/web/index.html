@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,11 +26,11 @@
 </head>
 <body>
     <div class="header">📅 Schedule Bot</div>
-    <div id="status" class="status disconnected">Отключение...</div>
+    <div id="status" class="status disconnected">Disconnected...</div>
     <div id="chat" class="chat-container"></div>
     <div class="input-container">
-        <input type="text" id="message-input" placeholder="Введите сообщение..." autocomplete="off">
-        <button id="send-btn">Отправить</button>
+        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+        <button id="send-btn">Send</button>
     </div>
     <script>
         const ACCESS_KEY = 'schedule-bot-secret-key';
@@ -55,21 +55,21 @@
             ws = new WebSocket(WS_URL);
             
             ws.onopen = () => {
-                status.textContent = 'Подключено';
+                status.textContent = 'Connected';
                 status.className = 'status connected';
                 sendBtn.disabled = false;
                 input.focus();
             };
 
             ws.onclose = () => {
-                status.textContent = 'Отключено. Переподключение через 3 сек...';
+                status.textContent = 'Disconnected. Reconnecting in 3 sec...';
                 status.className = 'status disconnected';
                 sendBtn.disabled = true;
                 setTimeout(connect, 3000);
             };
 
             ws.onerror = () => {
-                status.textContent = 'Ошибка подключения';
+                status.textContent = 'Connection error';
                 status.className = 'status disconnected';
             };
 
