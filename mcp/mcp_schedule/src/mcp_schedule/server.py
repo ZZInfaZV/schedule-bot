@@ -24,7 +24,12 @@ def create_server() -> Server:
                 description="Get the lesson that is happening right now. Returns the subject, room, teacher, and time. Returns null if there is no lesson at this moment.",
                 inputSchema={
                     "type": "object",
-                    "properties": {},
+                    "properties": {
+                        "group": {
+                            "type": "string",
+                            "description": "Group identifier (e.g. 'b25-cse-05'). Defaults to 'b25-cse-05'.",
+                        },
+                    },
                 },
             ),
             Tool(
@@ -36,6 +41,10 @@ def create_server() -> Server:
                         "day": {
                             "type": "string",
                             "description": "Day of the week in Russian: Пн, Вт, Ср, Чт, Пт, Сб. You can also accept 'today', 'tomorrow' and will resolve it.",
+                        },
+                        "group": {
+                            "type": "string",
+                            "description": "Group identifier (e.g. 'b25-cse-05'). Defaults to 'b25-cse-05'.",
                         },
                         "week_type": {
                             "type": "string",
@@ -56,6 +65,10 @@ def create_server() -> Server:
                             "type": "string",
                             "description": "Subject name or part of it (e.g. 'Сети', 'математика').",
                         },
+                        "group": {
+                            "type": "string",
+                            "description": "Group identifier (e.g. 'b25-cse-05'). Defaults to 'b25-cse-05'.",
+                        },
                     },
                     "required": ["subject"],
                 },
@@ -70,6 +83,10 @@ def create_server() -> Server:
                             "type": "string",
                             "description": "Subject name or part of it.",
                         },
+                        "group": {
+                            "type": "string",
+                            "description": "Group identifier (e.g. 'b25-cse-05'). Defaults to 'b25-cse-05'.",
+                        },
                     },
                     "required": ["subject"],
                 },
@@ -80,6 +97,10 @@ def create_server() -> Server:
                 inputSchema={
                     "type": "object",
                     "properties": {
+                        "group": {
+                            "type": "string",
+                            "description": "Group identifier (e.g. 'b25-cse-05'). Defaults to 'b25-cse-05'.",
+                        },
                         "week_type": {
                             "type": "string",
                             "description": "Week type: 'even' (чётная), 'odd' (нечётная), or null for both.",
@@ -90,10 +111,15 @@ def create_server() -> Server:
             ),
             Tool(
                 name="sync_schedule",
-                description="Manually sync the schedule from Google Sheets to the local database. Use this when the user asks to update/refresh the schedule, or when the data seems outdated. This tool fetches data from the remote sheet and replaces all local data.",
+                description="Manually sync the schedule from Google Sheets to the local database. Use this when the user asks to update/refresh the schedule, or when the data seems outdated. This tool fetches data from the remote sheet and replaces data for the specified group only.",
                 inputSchema={
                     "type": "object",
-                    "properties": {},
+                    "properties": {
+                        "group": {
+                            "type": "string",
+                            "description": "Group identifier (e.g. 'b25-cse-05'). Defaults to 'b25-cse-05'.",
+                        },
+                    },
                 },
             ),
         ]
@@ -101,9 +127,10 @@ def create_server() -> Server:
     @server.call_tool()
     async def call_tool(name: str, arguments: dict):
         db_conn = database.init_db()
+        group = arguments.get("group", "b25-cse-05")
 
         if name == "get_now":
-            lesson = database.get_now(db_conn)
+            lesson = database.get_now(db_conn, group)
             if lesson:
                 return [TextContent(
                     type="text",
@@ -132,7 +159,7 @@ def create_server() -> Server:
             elif day.lower() == "завтра":
                 day = ru_days[(today_idx + 1) % 7]
 
-            lessons = database.get_schedule(db_conn, day, week_type)
+            lessons = database.get_schedule(db_conn, day, group, week_type)
             if not lessons:
                 return [TextContent(type="text", text=f"Нет занятий на {day}.")]
 
@@ -147,7 +174,7 @@ def create_server() -> Server:
 
         elif name == "get_room":
             subject = arguments.get("subject", "")
-            result = database.get_room(db_conn, subject)
+            result = database.get_room(db_conn, subject, group)
             if result:
                 return [TextContent(
                     type="text",
@@ -158,7 +185,7 @@ def create_server() -> Server:
 
         elif name == "get_teacher":
             subject = arguments.get("subject", "")
-            result = database.get_teacher(db_conn, subject)
+            result = database.get_teacher(db_conn, subject, group)
             if result:
                 return [TextContent(
                     type="text",
@@ -169,7 +196,7 @@ def create_server() -> Server:
 
         elif name == "get_week":
             week_type = arguments.get("week_type")
-            week_data = database.get_week(db_conn, week_type)
+            week_data = database.get_week(db_conn, group, week_type)
             if not week_data:
                 return [TextContent(type="text", text="Расписание на неделю пусто. Попробуйте sync_schedule.")]
 
@@ -192,7 +219,7 @@ def create_server() -> Server:
                     text="Ошибка: переменная окружения SCHEDULE_SHEET_URL не установлена.",
                 )]
             try:
-                result = sync.sync_from_sheet(sheet_url, db_conn)
+                result = sync.sync_from_sheet(sheet_url, db_conn, group=group)
                 return [TextContent(
                     type="text",
                     text=f"Синхронизация: {result['status']}\n"

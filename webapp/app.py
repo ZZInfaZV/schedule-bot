@@ -110,8 +110,8 @@ async def show_schedule(
     """Show schedule for selected group + day (or full week)."""
     conn = get_db()
 
-    # Ensure data exists for this group — sync if DB is empty
-    cursor = conn.execute("SELECT COUNT(*) as cnt FROM lessons")
+    # Ensure data exists for this group — sync if this group has no lessons
+    cursor = conn.execute('SELECT COUNT(*) as cnt FROM lessons WHERE "group" = ?', (group,))
     count = cursor.fetchone()["cnt"]
     sync_status = None
     if count == 0:
@@ -121,7 +121,7 @@ async def show_schedule(
         except Exception as e:
             sync_status = {"status": "error", "message": str(e)}
 
-    now_lesson = get_now(conn)
+    now_lesson = get_now(conn, group)
 
     if mode == "now":
         schedule = None
@@ -141,7 +141,7 @@ async def show_schedule(
         return Response(content=render_template("index.html", context), media_type="text/html")
 
     if mode == "week" or not day:
-        week_data = get_week(conn)
+        week_data = get_week(conn, group)
         # Flatten week into a list with day headers
         schedule = []
         for day_info in DAYS:
@@ -155,7 +155,7 @@ async def show_schedule(
                     schedule.append(lesson)
         selected_day_label = "Вся неделя"
     else:
-        lessons = get_schedule(conn, day)
+        lessons = get_schedule(conn, day, group)
         schedule = lessons
         selected_day_label = next((d["label"] for d in DAYS if d["key"] == day), day)
 
@@ -208,9 +208,9 @@ async def api_schedule(group: str = "b25-cse-05", day: str = ""):
     """JSON API — get schedule for a group + day."""
     conn = get_db()
     if day:
-        lessons = get_schedule(conn, day)
+        lessons = get_schedule(conn, day, group)
     else:
-        lessons = get_week(conn)
+        lessons = get_week(conn, group)
     return {"group": group, "day": day or "all", "lessons": lessons}
 
 

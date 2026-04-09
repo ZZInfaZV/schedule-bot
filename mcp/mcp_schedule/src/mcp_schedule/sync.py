@@ -145,13 +145,31 @@ def _detect_sheet_id_prefix(url: str) -> str:
     return extract_spreadsheet_id(url)
 
 
-def _get_data_cols(url: str, group: str) -> list[int]:
-    prefix = _detect_sheet_id_prefix(url)
-    maps = GROUP_MAPS.get(prefix, {})
-    cols = maps.get(group)
-    if cols is not None:
-        return cols
-    return [1, 9]
+def _get_data_cols(url: str, group: str) -> tuple[list[int], int]:
+    """Return (all columns to read, group's own column).
+
+    Always includes column 1 for common lectures (BS/MS/PhD Row 0 cells)
+    plus the group's own column. The parser will only extract Row 0 cells
+    from column 1, and normal cells from the group's own column.
+    """
+    spreadsheet_id = _detect_sheet_id_prefix(url)
+    # Try exact match first, then prefix match (GROUP_MAPS keys may be short prefixes)
+    maps = GROUP_MAPS.get(spreadsheet_id)
+    if maps is None:
+        for key, val in GROUP_MAPS.items():
+            if spreadsheet_id.startswith(key):
+                maps = val
+                break
+    if maps is None:
+        return [1], 1
+    group_cols = maps.get(group)
+    if group_cols is None:
+        return [1], 1
+    own_col = group_cols[0] if isinstance(group_cols, list) else group_cols
+    # Always include column 1 for common lectures (lectures shared by all)
+    if 1 in group_cols:
+        return sorted(set(group_cols)), own_col
+    return sorted(set([1] + group_cols)), own_col
 
 
 def fetch_schedule(sheet_url: str, group: str = "b25-cse-05") -> list[dict]:
@@ -175,7 +193,7 @@ def fetch_schedule(sheet_url: str, group: str = "b25-cse-05") -> list[dict]:
     if len(rows) < 3:
         return []
 
-    data_cols = _get_data_cols(sheet_url, group)
+    data_cols, own_col = _get_data_cols(sheet_url, group)
     lessons = []
     current_day = ""
     current_time = None
@@ -215,6 +233,17 @@ def fetch_schedule(sheet_url: str, group: str = "b25-cse-05") -> list[dict]:
             # Handle Row 0 specially - it has merged cells with super-category + group + subject + teacher
             # Detect if this is a Row 0 cell (has super-category or group header with subject)
             is_row0 = bool(re.match(r"^(BS|MS|PhD)\s*-\s*Year\s*\d+", cell))
+
+            # For non-own columns (column 1 for other groups), only extract Row 0 common lectures
+            # and (lec)/(tut) type cells (shared lectures/tutorials for all groups on other days).
+            # Skip (lab) cells from non-own columns — those belong to other groups.
+            if not is_row0 and dc != own_col:
+                if dc == 1:
+                    subj_check, ltype_check, _ = _parse_subject_line(cell)
+                    if ltype_check not in ("lec", "tut"):
+                        continue
+                else:
+                    continue
             
             if is_row0:
                 # Parse the complex Row 0 cell
@@ -352,10 +381,12 @@ def sync_from_sheet(sheet_url: str, db_conn, group: str = "b25-cse-05") -> dict:
     if not lessons:
         return {"status": "no_data", "message": "No lessons found in the sheet"}
 
-    deleted = database.clear_lessons(db_conn)
+    # Only clear this group's lessons, not all groups
+    deleted = database.clear_lessons(db_conn, group=group)
     now = datetime.now().isoformat()
     for lesson in lessons:
         lesson["synced_at"] = now
+        lesson["group"] = group
 
     inserted = database.insert_lessons(db_conn, lessons)
 

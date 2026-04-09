@@ -23,6 +23,7 @@ def init_db(db_path: Optional[Path] = None) -> sqlite3.Connection:
     conn.execute("""
         CREATE TABLE IF NOT EXISTS lessons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            "group" TEXT NOT NULL DEFAULT 'b25-cse-05',
             day TEXT NOT NULL,
             time_start TEXT NOT NULL,
             time_end TEXT NOT NULL,
@@ -37,9 +38,14 @@ def init_db(db_path: Optional[Path] = None) -> sqlite3.Connection:
     return conn
 
 
-def clear_lessons(conn: sqlite3.Connection) -> int:
-    """Delete all lessons and return the count of deleted rows."""
-    cursor = conn.execute("DELETE FROM lessons")
+def clear_lessons(conn: sqlite3.Connection, group: Optional[str] = None) -> int:
+    """Delete lessons and return the count of deleted rows.
+    If group is provided, only delete that group's lessons.
+    """
+    if group:
+        cursor = conn.execute('DELETE FROM lessons WHERE "group" = ?', (group,))
+    else:
+        cursor = conn.execute("DELETE FROM lessons")
     conn.commit()
     return cursor.rowcount
 
@@ -47,16 +53,18 @@ def clear_lessons(conn: sqlite3.Connection) -> int:
 def insert_lessons(conn: sqlite3.Connection, lessons: list[dict]) -> int:
     """Insert multiple lessons and return the count."""
     conn.executemany("""
-        INSERT INTO lessons (day, time_start, time_end, subject, room, teacher, week_type, synced_at)
-        VALUES (:day, :time_start, :time_end, :subject, :room, :teacher, :week_type, :synced_at)
+        INSERT INTO lessons ("group", day, time_start, time_end, subject, room, teacher, week_type, synced_at)
+        VALUES (:group, :day, :time_start, :time_end, :subject, :room, :teacher, :week_type, :synced_at)
     """, lessons)
     conn.commit()
     return len(lessons)
 
 
-def get_now(conn: sqlite3.Connection) -> Optional[dict]:
+def get_now(conn: sqlite3.Connection, group: str = "b25-cse-05") -> Optional[dict]:
     """Get the current lesson based on system time and day of week."""
-    now = datetime.now()
+    import zoneinfo
+    msk = zoneinfo.ZoneInfo("Europe/Moscow")
+    now = datetime.now(msk)
     day_map = {
         0: "Пн", 1: "Вт", 2: "Ср", 3: "Чт", 4: "Пт", 5: "Сб", 6: "Вс"
     }
@@ -69,10 +77,10 @@ def get_now(conn: sqlite3.Connection) -> Optional[dict]:
 
     cursor = conn.execute("""
         SELECT * FROM lessons
-        WHERE day = ?
+        WHERE "group" = ? AND day = ?
           AND (week_type = ? OR week_type = 'both')
         ORDER BY time_start
-    """, (today_ru, week_type))
+    """, (group, today_ru, week_type))
 
     for row in cursor.fetchall():
         start_h, start_m = map(int, row["time_start"].split(":"))
@@ -86,47 +94,47 @@ def get_now(conn: sqlite3.Connection) -> Optional[dict]:
     return None
 
 
-def get_schedule(conn: sqlite3.Connection, day: str, week_type: Optional[str] = None) -> list[dict]:
-    """Get all lessons for a specific day."""
+def get_schedule(conn: sqlite3.Connection, day: str, group: str = "b25-cse-05", week_type: Optional[str] = None) -> list[dict]:
+    """Get all lessons for a specific day and group."""
     if week_type and week_type != "both":
         cursor = conn.execute("""
             SELECT * FROM lessons
-            WHERE day = ? AND (week_type = ? OR week_type = 'both')
+            WHERE "group" = ? AND day = ? AND (week_type = ? OR week_type = 'both')
             ORDER BY time_start
-        """, (day, week_type))
+        """, (group, day, week_type))
     else:
         cursor = conn.execute("""
             SELECT * FROM lessons
-            WHERE day = ?
+            WHERE "group" = ? AND day = ?
             ORDER BY time_start
-        """, (day,))
+        """, (group, day))
 
     return [dict(row) for row in cursor.fetchall()]
 
 
-def get_room(conn: sqlite3.Connection, subject: str) -> Optional[dict]:
+def get_room(conn: sqlite3.Connection, subject: str, group: str = "b25-cse-05") -> Optional[dict]:
     """Get the room for a subject."""
     cursor = conn.execute("""
         SELECT subject, room, teacher FROM lessons
-        WHERE LOWER(subject) LIKE LOWER(?)
+        WHERE "group" = ? AND LOWER(subject) LIKE LOWER(?)
         LIMIT 1
-    """, (f"%{subject}%",))
+    """, (group, f"%{subject}%"))
     row = cursor.fetchone()
     return dict(row) if row else None
 
 
-def get_teacher(conn: sqlite3.Connection, subject: str) -> Optional[dict]:
+def get_teacher(conn: sqlite3.Connection, subject: str, group: str = "b25-cse-05") -> Optional[dict]:
     """Get the teacher for a subject."""
     cursor = conn.execute("""
         SELECT subject, teacher, room FROM lessons
-        WHERE LOWER(subject) LIKE LOWER(?)
+        WHERE "group" = ? AND LOWER(subject) LIKE LOWER(?)
         LIMIT 1
-    """, (f"%{subject}%",))
+    """, (group, f"%{subject}%"))
     row = cursor.fetchone()
     return dict(row) if row else None
 
 
-def get_week(conn: sqlite3.Connection, week_type: Optional[str] = None) -> dict:
+def get_week(conn: sqlite3.Connection, group: str = "b25-cse-05", week_type: Optional[str] = None) -> dict:
     """Get the full week schedule grouped by day."""
     days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
     schedule = {}
@@ -135,15 +143,15 @@ def get_week(conn: sqlite3.Connection, week_type: Optional[str] = None) -> dict:
         if week_type and week_type != "both":
             cursor = conn.execute("""
                 SELECT * FROM lessons
-                WHERE day = ? AND (week_type = ? OR week_type = 'both')
+                WHERE "group" = ? AND day = ? AND (week_type = ? OR week_type = 'both')
                 ORDER BY time_start
-            """, (day, week_type))
+            """, (group, day, week_type))
         else:
             cursor = conn.execute("""
                 SELECT * FROM lessons
-                WHERE day = ?
+                WHERE "group" = ? AND day = ?
                 ORDER BY time_start
-            """, (day,))
+            """, (group, day))
 
         lessons = [dict(row) for row in cursor.fetchall()]
         if lessons:
