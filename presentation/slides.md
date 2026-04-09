@@ -101,7 +101,7 @@ FastAPI web UI + sync from Google Sheets → cache in SQLite
 
 **📂 GitHub Repository**
 
-`https://github.com/ZZInfaZV/schedule-bot`
+`https://github.com/ZZInfaZV/se-toolkit-hackathon`
 
 ![QR: GitHub](https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://github.com/ZZInfaZV/se-toolkit-hackathon)
 
