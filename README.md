@@ -1,12 +1,12 @@
 # Schedule Bot
 
-AI-powered schedule assistant with a web UI and natural-language chatbot — answers questions about classes, rooms, and teachers, even when offline.
+Schedule assistant with a web UI and natural-language chatbot — answers questions about classes, rooms, and teachers, even when offline.
 
 ## Demo
 
-![Screenshot 1](screenshots/sc1.png)
-![Screenshot 2](screenshots/sc2.png)
-![Screenshot 3](screenshots/sc3.png)
+![Screenshot 1](screenshots/sc1.jpg)
+![Screenshot 2](screenshots/sc2.jpg)
+![Screenshot 3](screenshots/sc3.jpg)
 
 ## Context
 
